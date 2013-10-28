@@ -1,7 +1,7 @@
 AeroGear Geo Plugin
 ===================
 
-This plugin is a collection of tools to make you live easier when useing geo posistioning. It provides options to easly create maps that are based [openlayers](http://openlayers.org/) and adds some helpers to do some typical things when developing mobile applications.
+This plugin is a collection of tools to make you live easier when using geo posistioning. It provides options to easly create maps that are based [openlayers](http://openlayers.org/) and adds some helpers to do some typical things when developing mobile applications.
 
 For instance:
 
