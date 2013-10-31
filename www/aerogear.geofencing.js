@@ -25,7 +25,7 @@ var geofencing = {
     #define KEY_REGION_LNG     @"longitude"
 	*/
      removeRegion: function(id) {
-          return cordova.exec(null, null, "Geofencing", "removeRegion", [id]);
+          return cordova.exec(null, null, "Geofencing", "removeRegion", [{fid: id}]);
      },
 
      /*
