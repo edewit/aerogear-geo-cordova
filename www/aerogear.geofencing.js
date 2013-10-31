@@ -1,9 +1,9 @@
-//var exec = require('cordova.exec');
+var exec = require('cordova/exec');
 
 var geofencing = {
 
     register: function(params) {
-        return cordova.exec(null, null, 'Geofencing', 'register', [params]);
+        return exec(null, null, 'Geofencing', 'register', [params]);
     },
 
 	/*
@@ -15,7 +15,7 @@ var geofencing = {
     #define KEY_REGION_ACCURACY @"accuracy"
 	*/
      addRegion: function(successCallback, errorCallback, params) {
-          return cordova.exec(successCallback, errorCallback, "Geofencing", "addRegion", [params]);
+          return exec(successCallback, errorCallback, "Geofencing", "addRegion", [params]);
      },
 
      /*
@@ -25,7 +25,7 @@ var geofencing = {
     #define KEY_REGION_LNG     @"longitude"
 	*/
      removeRegion: function(id) {
-          return cordova.exec(null, null, "Geofencing", "removeRegion", [{fid: id}]);
+          return exec(null, null, "Geofencing", "removeRegion", [{fid: id}]);
      },
 
      /*
@@ -33,7 +33,7 @@ var geofencing = {
 	NONE
 	*/
 	getWatchedRegionIds: function(success, fail) {
-		return cordova.exec(success, fail, "Geofencing", "getWatchedRegionIds", []);
+		return exec(success, fail, "Geofencing", "getWatchedRegionIds", []);
 	},
 	
 	/*
@@ -41,6 +41,8 @@ var geofencing = {
 	NONE
 	*/
 	getPendingRegionUpdates: function(success, fail) {
-		return cordova.exec(success, fail, "Geofencing", "getPendingRegionUpdates", []);
+		return exec(success, fail, "Geofencing", "getPendingRegionUpdates", []);
 	}
 };
+
+module.exports = geofencing;
