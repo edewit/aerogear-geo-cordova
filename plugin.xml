@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        id="org.jboss.aerogear.cordova.geo"
+        version="0.0.1">
+
+  <name>AeroGear Geo Plugin</name>
+
+  <description>
+    This plugin is a collection of tools to make you live easier when using geo posistioning. It provides options to easly create maps that are based openlayers and adds the posiblity to monitor geo fences. 
+  </description>
+
+  <license>MIT</license>
+
+  <engines>
+    <engine name="cordova" version=">=3.0.0"/>
+  </engines>
+
+  <js-module src="www/aerogear.geofencing.js" name="geofencing">
+    <clobbers target="geofencing"/>
+  </js-module>
+
+  <js-module src="www/aerogear.map.js" name="AeroGear.Map">
+    <clobbers target="cordova.plugins.map"/>
+  </js-module>
+
+  <js-module src="www/OpenLayers.mobile.js" name="OpenLayers">
+    <clobbers target="cordova.plugins.layers"/>
+  </js-module>
+
+  <!-- android -->
+  <platform name="android">
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="Geofencing">
+          <param name="android-package" value="org.jboss.aerogear.cordova.geo.GeofencingPlugin" />
+      </feature>
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+      <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+      <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+      <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+      <uses-permission android:name="android.permission.VIBRATE" />
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+        <activity android:name="org.jboss.aerogear.cordova.geo.ProxyActivity" />
+        <receiver android:name="org.jboss.aerogear.cordova.geo.ProximityReceiver">
+            <intent-filter>
+                <action android:name="geoFencingProximityAlert" />
+                <data android:mimeType="vnd.geofencing.region/*" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="org.jboss.aerogear.cordova.geo.StartServiceAtBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <service android:enabled="true" android:name="org.jboss.aerogear.cordova.geo.GeofencingService" />
+    </config-file>
+
+    <source-file src="src/android/libs/android-support-v13.jar" target-dir="libs"/>
+
+    <source-file src="src/android/org/jboss/aerogear/cordova/geo/Geofence.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
+    <source-file src="src/android/org/jboss/aerogear/cordova/geo/GeofenceStore.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
+    <source-file src="src/android/org/jboss/aerogear/cordova/geo/GeofencingPlugin.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
+    <source-file src="src/android/org/jboss/aerogear/cordova/geo/GeofencingService.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
+    <source-file src="src/android/org/jboss/aerogear/cordova/geo/LocationChangedListener.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
+    <source-file src="src/android/org/jboss/aerogear/cordova/geo/ProximityReceiver.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
+    <source-file src="src/android/org/jboss/aerogear/cordova/geo/ProxyActivity.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
+    <source-file src="src/android/org/jboss/aerogear/cordova/geo/StartServiceAtBootReceiver.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
+  </platform>
+
+  <!-- ios -->
+  <platform name="ios">
+    <config-file target="config.xml" parent="/*">
+      <feature name="Geofencing">
+        <param name="ios-package" value="GeofencingPlugin" />
+      </feature>
+    </config-file>
+
+    <source-file src="src/ios/GeofencingPlugin.m"/>
+    <header-file src="src/ios/GeofencingPlugin.h"/>
+  </platform>
+</plugin>
