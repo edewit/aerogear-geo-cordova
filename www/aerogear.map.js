@@ -73,7 +73,7 @@ var AeroGear = AeroGear || {};
         this.watchedPosition = function (position) {
             var point, circle, compassHeading;
 
-            point = new OpenLayers.Geometry.Point(position.coords.longitude, position.coords.latitude)
+            point = new OpenLayers.LonLat(position.coords.longitude, position.coords.latitude)
                 .transform(
                     new OpenLayers.Projection("EPSG:4326"),
                     self.map.getProjectionObject()
@@ -146,7 +146,8 @@ var AeroGear = AeroGear || {};
         navigator.geolocation.clearWatch(this.watchId);
     }
 
-    AeroGear.Map.prototype.drawMarker = function (point) {
+    AeroGear.Map.prototype.drawMarker = function (lonLat) {
+        var point = new OpenLayers.Geometry.Point(lonLat.lon, lonLat.lat);
         this.vector.addFeatures(
             new OpenLayers.Feature.Vector(
                 point,
