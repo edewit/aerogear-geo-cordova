@@ -187,17 +187,22 @@ var AeroGear = AeroGear || {};
         modifyControl = new OpenLayers.Control.ModifyFeature(layer);
         modifyControl.mode = OpenLayers.Control.ModifyFeature.RESIZE;
 
-        layer.events.register('featuremodified', circle, function (event) {
-            var bounds = event.feature.geometry.bounds;
-            console.log(bounds);
-        });
-
         this.map.addControls([modifyControl]);
         modifyControl.activate();
 
         this.map.zoomToExtent(layer.getDataExtent());
     };
 
+    AeroGear.Map.prototype.addFenceModificationListener = function(callback) {
+        var layer = this.map.getLayersByName('fence')[0];
+        layer.events.register('featuremodified', layer.features[0], function(event) {
+            var center = event.feature.geometry.getCentroid();
+            var point1 = event.feature.geometry.components[0].components[1];
+            var radius = center.distanceTo(point1);
+            callback(event.feature.geometry.getBounds().getCenterLonLat(), radius);
+        });
+    }
+  
     AeroGear.Map.prototype.getProjectionObject = function() {
         return this.map.getProjectionObject();
     }
