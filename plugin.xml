@@ -65,7 +65,6 @@
     <source-file src="src/android/org/jboss/aerogear/cordova/geo/GeofenceStore.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
     <source-file src="src/android/org/jboss/aerogear/cordova/geo/GeofencingPlugin.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
     <source-file src="src/android/org/jboss/aerogear/cordova/geo/GeofencingService.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
-    <source-file src="src/android/org/jboss/aerogear/cordova/geo/LocationChangedListener.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
     <source-file src="src/android/org/jboss/aerogear/cordova/geo/ProximityReceiver.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
     <source-file src="src/android/org/jboss/aerogear/cordova/geo/ProxyActivity.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
     <source-file src="src/android/org/jboss/aerogear/cordova/geo/StartServiceAtBootReceiver.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
