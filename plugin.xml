@@ -16,16 +16,12 @@
     <engine name="cordova" version=">=3.0.0"/>
   </engines>
 
+  <asset src="www/OpenLayers.mobile.js" target="OpenLayers.mobile.js"/>
+  <asset src="www/aerogear.map.js" target="aerogear.map.js"/>
+  <asset src="www/openlayers.css" target="openlayers.css"/>
+  
   <js-module src="www/aerogear.geofencing.js" name="geofencing">
     <clobbers target="geofencing"/>
-  </js-module>
-
-  <js-module src="www/aerogear.map.js" name="AeroGear.Map">
-    <clobbers target="cordova.plugins.map"/>
-  </js-module>
-
-  <js-module src="www/OpenLayers.mobile.js" name="OpenLayers">
-    <clobbers target="cordova.plugins.layers"/>
   </js-module>
 
   <!-- android -->
