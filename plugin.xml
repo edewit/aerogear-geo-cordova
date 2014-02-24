@@ -19,10 +19,19 @@
   <asset src="www/OpenLayers.mobile.js" target="OpenLayers.mobile.js"/>
   <asset src="www/aerogear.map.js" target="aerogear.map.js"/>
   <asset src="www/openlayers.css" target="openlayers.css"/>
-  
+
   <js-module src="www/aerogear.geofencing.js" name="geofencing">
     <clobbers target="geofencing"/>
   </js-module>
+
+  <info>
+    Please include:
+    &lt;script type="text/javascript" src="OpenLayers.mobile.js">&lt;/script>
+    &lt;script type="text/javascript" src="aerogear.map.js">&lt;/script>
+    &lt;link href="openlayers.css" rel="stylesheet" media="screen">
+
+    To be able to use the maps
+  </info>
 
   <!-- android -->
   <platform name="android">
