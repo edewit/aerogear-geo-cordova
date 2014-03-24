@@ -13,7 +13,7 @@
   <license>MIT</license>
 
   <engines>
-    <engine name="cordova" version=">=3.0.0"/>
+    <engine name="cordova" version=">=3.4.0"/>
   </engines>
 
   <js-module src="www/aerogear.geofencing.js" name="geofencing">
