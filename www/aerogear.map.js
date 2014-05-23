@@ -1,5 +1,5 @@
-var AeroGear = AeroGear || {};
-(function () {
+(function (window, undefined) {
+    this.AeroGear = {};
     'use strict';
 
     AeroGear.Map = function (opt) {
@@ -206,4 +206,4 @@ var AeroGear = AeroGear || {};
     AeroGear.Map.prototype.getProjectionObject = function() {
         return this.map.getProjectionObject();
     }
-}());
+})( this );
