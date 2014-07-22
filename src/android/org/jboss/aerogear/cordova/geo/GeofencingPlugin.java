@@ -170,9 +170,11 @@ public class GeofencingPlugin extends CordovaPlugin {
   }
 
   public static void sendNotification(Bundle bundle) {
-    final String status = bundle.getString("status");
-    final String id = bundle.getString("id");
-    sendNotification(createRegionEvent(id, status));
+    if (bundle != null) {
+      final String status = bundle.getString("status");
+      final String id = bundle.getString("id");
+      sendNotification(createRegionEvent(id, status));
+    }
   }
 
   public static void sendNotification(String id, String status) {
