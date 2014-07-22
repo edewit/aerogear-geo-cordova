@@ -110,6 +110,11 @@ public class GeofencingPlugin extends CordovaPlugin {
         if (params.has("notifyMessage")) {
           notifyMessage = (String) params.get("notifyMessage");
         }
+        
+        if (cachedRegionEvent != null) {
+          sendNotification(cachedRegionEvent);
+        }
+        
         return true;
       }
       if ("addRegion".equals(pluginCommand.getAction())) {
