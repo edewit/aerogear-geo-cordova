@@ -17,88 +17,88 @@
  * under the License.
  */
 var app = {
-    // Application Constructor
-    initialize: function () {
-        this.bindEvents();
-    },
-    // Bind Event Listeners
-    //
-    // Bind any events that are required on startup. Common events are:
-    // 'load', 'deviceready', 'offline', and 'online'.
-    bindEvents: function () {
-        document.addEventListener('deviceready', this.onDeviceReady, false);
-        document.getElementById('get_fences').addEventListener('click', this.getFences, false);
-    },
-    // deviceready Event Handler
-    //
-    // The scope of 'this' is the event. In order to call the 'receivedEvent'
-    // function, we must explicity call 'app.receivedEvent(...);'
-    onDeviceReady: function () {
-        app.receivedEvent('deviceready');
+  // Application Constructor
+  initialize: function () {
+    this.bindEvents();
+  },
+  // Bind Event Listeners
+  //
+  // Bind any events that are required on startup. Common events are:
+  // 'load', 'deviceready', 'offline', and 'online'.
+  bindEvents: function () {
+    document.addEventListener('deviceready', this.onDeviceReady, false);
+    document.getElementById('get_fences').addEventListener('click', this.getFences, false);
+    document.getElementById('remove_fence').addEventListener('click', this.remove, false);
+  },
+  // deviceready Event Handler
+  //
+  // The scope of 'this' is the event. In order to call the 'receivedEvent'
+  // function, we must explicity call 'app.receivedEvent(...);'
+  onDeviceReady: function () {
+    app.receivedEvent('deviceready');
 
-        if (geofencing) {
-            app.configureGeofence();
-        }
-    },
-    onGeofenceEvent
-    function (event) {
-        //notification comes back here
-        console.log('region event id: ' + event.fid + ' got event with status: ' + event.status);
+    if (geofencing) {
+      app.configureGeofence();
     }
-    configureGeofence: function () {
-        //start geofence and set notification callback
-        var geofence = geofencing;
-        geofence.register({
-            callback: 'app.onGeofenceEvent'
-        });
+  },
+  onGeofenceEvent: function (event) {
+    //notification comes back here
+    console.log('region event id: ' + event.fid + ' got event with status: ' + event.status);
+  },
+  configureGeofence: function () {
+    //start geofence and set notification callback
+    geofencing.register({
+      callback: 'app.onGeofenceEvent'
+    });
 
-        //start adding region
-        var params = {
-            fid: '5',
-            latitude: '59.36886650571518',
-            longitude: '24.634339553967266',
-            radius: '50'
-        };
+    //start adding region
+    var params = {
+      fid: '5',
+      latitude: '52.118759',
+      longitude: '5.406330',
+      radius: '5'
+    };
 
-        var success = function (data) {
-            console.log(data);
-            alert(data);
-        };
+    var success = function (data) {
+      console.log(data);
+      alert(data);
+    };
 
-        var error = function (data) {
-            console.log(data);
-            alert(data);
-        };
+    var error = function (data) {
+      console.log(data);
+      alert(data);
+    };
 
-        geofence.addRegion(success, error, params);
+    geofencing.addRegion(success, error, params);
 
-    },
-    getFences: function () {
+  },
+  getFences: function () {
 
-        var geofence = geofencing;
+    var success = function (data) {
+      console.log(data);
+      alert(data);
+    };
 
-        var success = function (data) {
-            console.log(data);
-            alert(data);
-        };
+    var error = function (data) {
+      console.log(data);
+      alert(data);
+    };
 
-        var error = function (data) {
-            console.log(data);
-            alert(data);
-        };
+    geofencing.getWatchedRegionIds(success, error);
 
-        geofence.getWatchedRegionIds(success, error);
+  },
+  remove: function() {
+    geofencing.removeRegion('5');
+  },
+  // Update DOM on a Received Event
+  receivedEvent: function (id) {
+    var parentElement = document.getElementById(id);
+    var listeningElement = parentElement.querySelector('.listening');
+    var receivedElement = parentElement.querySelector('.received');
 
-    },
-    // Update DOM on a Received Event
-    receivedEvent: function (id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
+    listeningElement.setAttribute('style', 'display:none;');
+    receivedElement.setAttribute('style', 'display:block;');
 
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
-
-        console.log('Received Event: ' + id);
-    }
+    console.log('Received Event: ' + id);
+  }
 };
