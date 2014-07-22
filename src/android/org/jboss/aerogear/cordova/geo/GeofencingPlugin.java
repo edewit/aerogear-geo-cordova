@@ -103,6 +103,15 @@ public class GeofencingPlugin extends CordovaPlugin {
 
   private boolean invokeService(final PluginCommand pluginCommand) throws JSONException {
     if (service != null) {
+      if ("register".equals(pluginCommand.getAction())) {
+        gWebView = this.webView;
+        JSONObject params = parseParameters(pluginCommand.getData());
+        callback = (String) params.get("callback");
+        if (params.has("notifyMessage")) {
+          notifyMessage = (String) params.get("notifyMessage");
+        }
+        return true;
+      }
       if ("addRegion".equals(pluginCommand.getAction())) {
         JSONObject params = parseParameters(pluginCommand.getData());
         String id = params.getString("fid");
