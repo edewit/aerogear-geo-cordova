@@ -119,7 +119,7 @@ public class GeofencingPlugin extends CordovaPlugin {
         return true;
       }
       if ("getWatchedRegionIds".equals(pluginCommand.getAction())) {
-        pluginCommand.getCallbackContext().success(new JSONArray(service.getWachedRegionIds()));
+        pluginCommand.getCallbackContext().success(new JSONArray(service.getWatchedRegionIds()));
         return true;
       }
       return false;
