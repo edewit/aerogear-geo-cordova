@@ -33,11 +33,13 @@ import org.json.JSONObject;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.*;
 
 import static org.jboss.aerogear.cordova.geo.GeofencingService.TAG;
 
 /**
  * Corodova Plugin to create Geofences.
+ *
  * @author edewit@redhat.com
  */
 public class GeofencingPlugin extends CordovaPlugin {
@@ -47,8 +49,12 @@ public class GeofencingPlugin extends CordovaPlugin {
   private static boolean foreground;
   private static String notifyMessage;
   private static CordovaWebView gWebView;
+  private static List<PluginCommand> pendingActions = new ArrayList<PluginCommand>();
 
-  public GeofencingService service;
+  private Timer timer = new Timer();
+
+
+  private GeofencingService service;
   private ServiceConnection connection = new ServiceConnection() {
 
     @Override
@@ -83,38 +89,7 @@ public class GeofencingPlugin extends CordovaPlugin {
   @Override
   public boolean execute(String action, JSONArray data, CallbackContext callbackContext) throws JSONException {
     try {
-      if ("register".equals(action)) {
-        gWebView = this.webView;
-        JSONObject params = parseParameters(data);
-        callback = (String) params.get("callback");
-        if (params.has("notifyMessage")) {
-          notifyMessage = (String) params.get("notifyMessage");
-        }
-
-        if (cachedRegionEvent != null) {
-          sendNotification(cachedRegionEvent);
-        }
-      }
-
-      if ("addRegion".equals(action)) {
-        JSONObject params = parseParameters(data);
-        String id = params.getString("fid");
-        Log.d(TAG, "adding region " + id);
-        service.addRegion(id, params.getDouble("latitude"), params.getDouble("longitude"),
-            (float) params.getInt("radius"));
-        callbackContext.success();
-        return true;
-      }
-      if ("removeRegion".equals(action)) {
-        JSONObject params = parseParameters(data);
-        String id = params.getString("fid");
-        service.removeRegion(id);
-        return true;
-      }
-      if ("getWatchedRegionIds".equals(action)) {
-        callbackContext.success(new JSONArray(service.getWachedRegionIds()));
-        return true;
-      }
+      return invokeService(new PluginCommand(action, data, callbackContext));
     } catch (Exception e) {
       StringWriter writer = new StringWriter();
       PrintWriter err = new PrintWriter(writer);
@@ -125,6 +100,53 @@ public class GeofencingPlugin extends CordovaPlugin {
 
     return false;
   }
+
+  private boolean invokeService(final PluginCommand pluginCommand) throws JSONException {
+    if (service != null) {
+      if ("addRegion".equals(pluginCommand.getAction())) {
+        JSONObject params = parseParameters(pluginCommand.getData());
+        String id = params.getString("fid");
+        Log.d(TAG, "adding region " + id);
+        service.addRegion(id, params.getDouble("latitude"), params.getDouble("longitude"),
+            (float) params.getInt("radius"));
+        pluginCommand.getCallbackContext().success();
+        return true;
+      }
+      if ("removeRegion".equals(pluginCommand.getAction())) {
+        JSONObject params = parseParameters(pluginCommand.getData());
+        String id = params.getString("fid");
+        service.removeRegion(id);
+        return true;
+      }
+      if ("getWatchedRegionIds".equals(pluginCommand.getAction())) {
+        pluginCommand.getCallbackContext().success(new JSONArray(service.getWachedRegionIds()));
+        return true;
+      }
+      return false;
+    } else {
+      pendingActions.add(pluginCommand);
+      timer.schedule(new TimerTask() {
+        @Override
+        public void run() {
+          if (service != null) {
+            for (PluginCommand args : pendingActions) {
+              try {
+                invokeService(args);
+              } catch (JSONException e) {
+                pluginCommand.callbackContext.error(e.getMessage());
+              }
+            }
+
+            pendingActions.clear();
+            cancel();
+          }
+        }
+      }, 2000);
+
+      return true;
+    }
+  }
+
 
   @Override
   public void onPause(boolean multitasking) {
@@ -187,5 +209,29 @@ public class GeofencingPlugin extends CordovaPlugin {
 
   public static String getNotifyMessage() {
     return notifyMessage;
+  }
+
+  private static class PluginCommand {
+    private final String action;
+    private final JSONArray data;
+    private final CallbackContext callbackContext;
+
+    private PluginCommand(String action, JSONArray data, CallbackContext callbackContext) {
+      this.action = action;
+      this.data = data;
+      this.callbackContext = callbackContext;
+    }
+
+    public String getAction() {
+      return action;
+    }
+
+    public JSONArray getData() {
+      return data;
+    }
+
+    public CallbackContext getCallbackContext() {
+      return callbackContext;
+    }
   }
 }
