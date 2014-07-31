@@ -17,7 +17,7 @@
 var exec = require('cordova/exec');
 
 /**
- geofencing is used to provide various geofencing methods
+ the global geofencing object is the entry point for all geofencing methods
  @status Experimental
  @class
  @returns {object} geofencing - The geofencing api
