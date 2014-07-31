@@ -25,7 +25,8 @@ var exec = require('cordova/exec');
 var geofencing = {
 
   /**
-   * register you app to receive geofencing alerts
+   * register a callback to get called when the geofence is entered or left ( a geofence is a radius around a geo coordinate )
+   * use addRegion to add a geofence.
    * @param {Function} [params.callback] - callback to be executed if a geofencing is entered or left
    * @param {String} [params.notifyMessage] - Message to be used for the alert defaults to 'You have {left/entered} your point of interest'
    * @returns {void}
