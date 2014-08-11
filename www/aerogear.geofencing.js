@@ -36,6 +36,8 @@ var geofencing = {
   },
 
   /**
+   * Add a geofence for a specific region. The fenceId (fid) needs to be a unique string, because this is passed when the
+   * notification callback is called.
    * @param {Function} successCallback - callback to be executed when successful added the specified geofence
    * @param {Function} errorCallback - callback to be executed when there was an error
    * @param {Object} params - objects that must have the following properties:
@@ -50,6 +52,7 @@ var geofencing = {
   },
 
   /**
+   * Remove a watched region for entering and leaving events by it's unique fenceId
    * @param {String} fid - the fence identifier of the fence to remove
    * @returns {void}
    */
@@ -60,6 +63,7 @@ var geofencing = {
   },
 
   /**
+   * SuccessCallback will get called with all the fenceIds that are currently being watched/monitored
    * @param {Function} successCallback - called with the list of watched fences
    * @param {Function} errorCallback - called if there was an error fetching the fences
    * @returns {void}
