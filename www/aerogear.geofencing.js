@@ -22,55 +22,57 @@ var exec = require('cordova/exec');
  @class
  @returns {object} geofencing - The geofencing api
  */
-var geofencing = {
+var geofencing = (function() {
 
-  /**
-   * register a callback to get called when the geofence is entered or left ( a geofence is a radius around a geo coordinate )
-   * use addRegion to add a geofence.
-   * @param {Function} [params.callback] - callback to be executed if a geofencing is entered or left
-   * @param {String} [params.notifyMessage] - Message to be used for the alert defaults to 'You have {left/entered} your point of interest'
-   * @returns {void}
-   */
-  register: function (params) {
-    exec(null, null, 'Geofencing', 'register', [params]);
-  },
+  return {
 
-  /**
-   * Add a geofence for a specific region. The fenceId (fid) needs to be a unique string, because this is passed when the
-   * notification callback is called.
-   * @param {Function} successCallback - callback to be executed when successful added the specified geofence
-   * @param {Function} errorCallback - callback to be executed when there was an error
-   * @param {Object} params - objects that must have the following properties:
-   * @param {String} params.fid - the fence identifier a string to identify this fence later
-   * @param {String} params.latitude - the latitude of the fence
-   * @param {String} params.longitude - the longitude of the fence
-   * @param {String} params.radius - the radius of the fence
-   * @returns {void}
-   */
-  addRegion: function (successCallback, errorCallback, params) {
-    exec(successCallback, errorCallback, 'Geofencing', 'addRegion', [params]);
-  },
+    /**
+     * register a callback to get called when the geofence is entered or left ( a geofence is a radius around a geo coordinate )
+     * use addRegion to add a geofence.
+     * @param {Function} callback - callback to be executed if a geofencing is entered or left
+     * @returns {void}
+     */
+    register: function (callback) {
+      exec(callback, null, 'Geofencing', 'register', []);
+    },
 
-  /**
-   * Remove a watched region for entering and leaving events by it's unique fenceId
-   * @param {String} fid - the fence identifier of the fence to remove
-   * @returns {void}
-   */
-  removeRegion: function (fid) {
-    exec(null, null, 'Geofencing', 'removeRegion', [
-      {fid: fid}
-    ]);
-  },
+    /**
+     * Add a geofence for a specific region. The fenceId (fid) needs to be a unique string, because this is passed when the
+     * notification callback is called.
+     * @param {Function} successCallback - callback to be executed when successful added the specified geofence
+     * @param {Function} errorCallback - callback to be executed when there was an error
+     * @param {Object} params - objects that must have the following properties:
+     * @param {String} params.fid - the fence identifier a string to identify this fence later
+     * @param {String} params.latitude - the latitude of the fence
+     * @param {String} params.longitude - the longitude of the fence
+     * @param {String} params.radius - the radius of the fence
+     * @returns {void}
+     */
+    addRegion: function (successCallback, errorCallback, params) {
+      exec(successCallback, errorCallback, 'Geofencing', 'addRegion', [params]);
+    },
 
-  /**
-   * SuccessCallback will get called with all the fenceIds that are currently being watched/monitored
-   * @param {Function} successCallback - called with the list of watched fences
-   * @param {Function} errorCallback - called if there was an error fetching the fences
-   * @returns {void}
-   */
-  getWatchedRegionIds: function (successCallback, errorCallback) {
-    exec(successCallback, errorCallback, 'Geofencing', 'getWatchedRegionIds', []);
+    /**
+     * Remove a watched region for entering and leaving events by it's unique fenceId
+     * @param {String} fid - the fence identifier of the fence to remove
+     * @returns {void}
+     */
+    removeRegion: function (fid) {
+      exec(null, null, 'Geofencing', 'removeRegion', [
+        {fid: fid}
+      ]);
+    },
+
+    /**
+     * SuccessCallback will get called with all the fenceIds that are currently being watched/monitored
+     * @param {Function} successCallback - called with the list of watched fences
+     * @param {Function} errorCallback - called if there was an error fetching the fences
+     * @returns {void}
+     */
+    getWatchedRegionIds: function (successCallback, errorCallback) {
+      exec(successCallback, errorCallback, 'Geofencing', 'getWatchedRegionIds', []);
+    }
   }
-};
+}());
 
 module.exports = geofencing;
