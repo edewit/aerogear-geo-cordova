@@ -96,9 +96,9 @@ public class GeofencingService extends Service implements GoogleApiClient.Connec
                   geofence.getLongitude(),
                   geofence.getRadius()
               )
-              .setExpirationDuration(Long.MAX_VALUE)
-              .setTransitionTypes(com.google.android.gms.location.Geofence.GEOFENCE_TRANSITION_ENTER
-                  | com.google.android.gms.location.Geofence.GEOFENCE_TRANSITION_EXIT).build()
+              .setExpirationDuration(geofence.getExpirationDuration())
+              .setTransitionTypes(geofence.getTransitionType())
+              .build()
       ), proximityIntent);
     }
   }
