@@ -1,0 +1,38 @@
+{
+  "name": "aerogear-cordova-geo",
+  "version": "0.0.1",
+  "description": "This plugin is a collection of tools to make you live easier when using geo posistioning. It provides options to easly create maps that are based openlayers and adds the posiblity to monitor geo fences.",
+  "cordova": {
+    "id": "org.jboss.aerogear.cordova.geo",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aerogear/aerogear-cordova-geo.git"
+  },
+  "keywords": [
+    "cordova",
+    "aerogear",
+    "geo",
+    "geofence",
+    "geofencing",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios"
+  ],
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=3.4.0"
+    }
+  ],
+  "author": "edewit",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://issues.jboss.org/browse/AGCORDOVA"
+  },
+  "homepage": "https://aerogear.org/docs/specs/aerogear-cordova/"
+}

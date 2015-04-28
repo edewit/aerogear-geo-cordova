@@ -11,7 +11,8 @@
   </description>
 
   <license>MIT</license>
-
+  <keywords>cordova,aerogear,geo,geofence,geofencing</keywords>
+  
   <engines>
     <engine name="cordova" version=">=3.4.0"/>
   </engines>
