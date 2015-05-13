@@ -36,11 +36,10 @@
 }
 
 - (void)register:(CDVInvokedUrlCommand *)command {
-    NSMutableDictionary *options = [self parseParameters:command];
-    self.callbackId = [options objectForKey:@"callback"];
-
-    self.message = [options objectForKey:@"notifyMessage"];
-    [self returnStatusOk:command];
+    self.callbackId = command.callbackId;
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)addRegion:(CDVInvokedUrlCommand *)command {
@@ -101,9 +100,13 @@
 - (void)notify:(CLRegion *)region withStatus:(NSString *)status{
     NSString *regionId = [self getRegionId:region];
 
-    NSString *json = [NSString stringWithFormat:@"{fid:\"%@\",status:\"%@\"}", regionId, status];
-    NSString * jsCallBack = [NSString stringWithFormat:@"%@(%@);", self.callbackId, json];
-    [self.webView stringByEvaluatingJavaScriptFromString:jsCallBack];
+    NSMutableDictionary *data = [[NSMutableDictionary alloc] init];
+    [data setObject:regionId forKey:@"fid"];
+    [data setObject:status forKey:@"status"];
+
+    CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:data];
+    [result setKeepCallback:[NSNumber numberWithBool:YES]];
+    [self.commandDelegate sendPluginResult:result callbackId:self.callbackId];
 
     //Local notification if the app is in the background
     NSString *statusMessage;

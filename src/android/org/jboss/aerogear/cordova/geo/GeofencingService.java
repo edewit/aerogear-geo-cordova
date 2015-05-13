@@ -18,28 +18,46 @@ package org.jboss.aerogear.cordova.geo;
 
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.google.android.gms.location.Geofence.Builder;
+
 /**
  * Service that monitors the Geofences.
+ *
  * @author edewit@redhat.com
  */
-public class GeofencingService extends Service {
+public class GeofencingService extends Service implements GoogleApiClient.ConnectionCallbacks {
   static final String TAG = GeofencingService.class.getSimpleName();
 
   static final String PROXIMITY_ALERT_INTENT = "geoFencingProximityAlert";
 
-  private LocationManager locationManager;
   private final IBinder binder = new LocalBinder();
   private GeofenceStore geofenceStore;
+  private GoogleApiClient googleClient;
+
+  @Override
+  public void onConnected(Bundle bundle) {
+
+    for (String id : geofenceStore.getGeofences()) {
+      Geofence geofence = geofenceStore.getGeofence(id);
+      addFence(id, geofence);
+    }
+  }
+
+  @Override
+  public void onConnectionSuspended(int i) {
+  }
 
   public class LocalBinder extends Binder {
     GeofencingService getService() {
@@ -49,13 +67,16 @@ public class GeofencingService extends Service {
 
   @Override
   public void onCreate() {
-    locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-
+    buildGoogleApiClient();
     geofenceStore = new GeofenceStore(getApplicationContext());
-    for (String id : geofenceStore.getGeofences()) {
-      Geofence fence = geofenceStore.getGeofence(id);
-      addFence(id, fence);
-    }
+  }
+
+  protected synchronized void buildGoogleApiClient() {
+    googleClient = new GoogleApiClient.Builder(this)
+        .addApi(LocationServices.API)
+        .addConnectionCallbacks(this)
+        .build();
+    googleClient.connect();
   }
 
   public void addRegion(String id, double latitude, double longitude, float radius) {
@@ -64,16 +85,31 @@ public class GeofencingService extends Service {
     addFence(id, geofence);
   }
 
-  private void addFence(String id, Geofence geofence) {
-    PendingIntent proximityIntent = createIntent(id);
-    locationManager.addProximityAlert(geofence.getLatitude(), geofence.getLongitude(),
-        geofence.getRadius(), geofence.getExpirationDuration(), proximityIntent);
+  private void addFence(String id, final Geofence geofence) {
+    if (googleClient.isConnected()) {
+      PendingIntent proximityIntent = createIntent(id);
+
+      LocationServices.GeofencingApi.addGeofences(googleClient, Arrays.asList(
+          new Builder().setRequestId(id)
+              .setCircularRegion(
+                  geofence.getLatitude(),
+                  geofence.getLongitude(),
+                  geofence.getRadius()
+              )
+              .setExpirationDuration(geofence.getExpirationDuration())
+              .setTransitionTypes(geofence.getTransitionType())
+              .build()
+      ), proximityIntent);
+    }
   }
+
 
   public void removeRegion(String id) {
     geofenceStore.clearGeofence(id);
     PendingIntent proximityIntent = createIntent(id);
-    locationManager.removeProximityAlert(proximityIntent);
+    if (googleClient.isConnected()) {
+      LocationServices.GeofencingApi.removeGeofences(googleClient, proximityIntent);
+    }
   }
 
   private PendingIntent createIntent(String id) {

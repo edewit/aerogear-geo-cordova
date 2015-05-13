@@ -23,17 +23,22 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static org.jboss.aerogear.cordova.geo.GeofencingService.TAG;
 
@@ -44,17 +49,16 @@ import static org.jboss.aerogear.cordova.geo.GeofencingService.TAG;
  */
 public class GeofencingPlugin extends CordovaPlugin {
 
-  private static String callback;
-  private static String cachedRegionEvent;
+  private static JSONObject cachedRegionEvent;
   private static boolean foreground;
   private static String notifyMessage;
-  private static CordovaWebView gWebView;
   private static List<PluginCommand> pendingActions = new ArrayList<PluginCommand>();
 
   private Timer timer = new Timer();
 
 
   private GeofencingService service;
+  private static CallbackContext callbackContext;
   private ServiceConnection connection = new ServiceConnection() {
 
     @Override
@@ -101,20 +105,19 @@ public class GeofencingPlugin extends CordovaPlugin {
     return false;
   }
 
+
   private boolean invokeService(final PluginCommand pluginCommand) throws JSONException {
     if (service != null) {
       if ("register".equals(pluginCommand.getAction())) {
-        gWebView = this.webView;
-        JSONObject params = parseParameters(pluginCommand.getData());
-        callback = (String) params.get("callback");
-        if (params.has("notifyMessage")) {
-          notifyMessage = (String) params.get("notifyMessage");
-        }
-        
+        callbackContext = pluginCommand.getCallbackContext();
+        PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
+        result.setKeepCallback(true);
+        callbackContext.sendPluginResult(result);
+
         if (cachedRegionEvent != null) {
           sendNotification(cachedRegionEvent);
         }
-        
+
         return true;
       }
       if ("addRegion".equals(pluginCommand.getAction())) {
@@ -136,6 +139,7 @@ public class GeofencingPlugin extends CordovaPlugin {
         pluginCommand.getCallbackContext().success(new JSONArray(service.getWatchedRegionIds()));
         return true;
       }
+
       return false;
     } else {
       pendingActions.add(pluginCommand);
@@ -195,16 +199,25 @@ public class GeofencingPlugin extends CordovaPlugin {
     sendNotification(createRegionEvent(id, status));
   }
 
-  private static void sendNotification(String regionEvent) {
-    if (callback != null && gWebView != null) {
-      gWebView.sendJavascript("javascript:" + callback + "(" + regionEvent + ")");
+  private static void sendNotification(JSONObject regionEvent) {
+    if (callbackContext != null) {
+      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, regionEvent);
+      pluginResult.setKeepCallback(true);
+      callbackContext.sendPluginResult(pluginResult);
     } else {
       cachedRegionEvent = regionEvent;
     }
   }
 
-  private static String createRegionEvent(String id, String status) {
-    return "{fid:" + id + ",status:\"" + status + "\"}";
+  private static JSONObject createRegionEvent(String id, String status) {
+    JSONObject data = new JSONObject();
+    try {
+      data.put("fid", id);
+      data.put("status", status);
+    } catch (JSONException e) {
+      throw new RuntimeException("could not create json object", e);
+    }
+    return data;
   }
 
   private JSONObject parseParameters(JSONArray data) throws JSONException {
@@ -220,7 +233,7 @@ public class GeofencingPlugin extends CordovaPlugin {
   }
 
   public static boolean isActive() {
-    return gWebView != null;
+    return callbackContext != null;
   }
 
   public static String getNotifyMessage() {
