@@ -7,7 +7,7 @@
   <name>AeroGear Geo Plugin</name>
 
   <description>
-    This plugin is a collection of tools to make you live easier when using geo posistioning. It provides options to easly create maps that are based openlayers and adds the posiblity to monitor geo fences. 
+    This plugin is a collection of tools to make you live easier when using geo posistioning. It provides options to easly create maps that are based openlayers and adds the posiblity to monitor geo fences.
   </description>
 
   <license>MIT</license>
@@ -15,6 +15,7 @@
   
   <engines>
     <engine name="cordova" version=">=3.4.0"/>
+    <engine name="cordova-android" version=">=3.7.2" />
   </engines>
 
   <asset src="www/OpenLayers.mobile.js" target="OpenLayers.mobile.js"/>
