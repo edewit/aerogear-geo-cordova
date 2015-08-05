@@ -1,6 +1,6 @@
 {
   "name": "aerogear-cordova-geo",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "This plugin is a collection of tools to make you live easier when using geo positioning. It provides options to easly create maps that are based openlayers and adds the posiblity to monitor geo fences.",
   "cordova": {
     "id": "org.jboss.aerogear.cordova.geo",

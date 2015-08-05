@@ -52,7 +52,7 @@ public class Geofence {
     }
 
     public Geofence(String id, double latitude, double longitude, float radius) {
-        this(id, latitude, longitude, radius, -1, 0);
+        this(id, latitude, longitude, radius, -1, 3);
     }
     // Instance field getters
 

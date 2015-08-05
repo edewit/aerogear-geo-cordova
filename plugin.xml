@@ -2,12 +2,12 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
         id="org.jboss.aerogear.cordova.geo"
-        version="0.0.1">
+        version="0.0.2">
 
   <name>AeroGear Geo Plugin</name>
 
   <description>
-    This plugin is a collection of tools to make you live easier when using geo posistioning. It provides options to easly create maps that are based openlayers and adds the posiblity to monitor geo fences. 
+    This plugin is a collection of tools to make you live easier when using geo posistioning. It provides options to easly create maps that are based openlayers and adds the posiblity to monitor geo fences.
   </description>
 
   <license>MIT</license>
@@ -15,6 +15,7 @@
   
   <engines>
     <engine name="cordova" version=">=3.4.0"/>
+    <engine name="cordova-android" version=">=3.7.2" />
   </engines>
 
   <asset src="www/OpenLayers.mobile.js" target="OpenLayers.mobile.js"/>
@@ -65,7 +66,8 @@
         <service android:enabled="true" android:name="org.jboss.aerogear.cordova.geo.GeofencingService" />
     </config-file>
 
-    <source-file src="src/android/libs/android-support-v13.jar" target-dir="libs"/>
+    <dependency id="android.support.v4" url="https://github.com/MobileChromeApps/cordova-plugin-android-support-v4" commit="8670959210f07f5a483e40b7fbfdb8ca5a50d3f"/>
+    <dependency id="com.google.playservices" url="https://github.com/MobileChromeApps/google-play-services" commit="00f511a8ce332d4586f067240460bfe978ace2ae" />
 
     <source-file src="src/android/org/jboss/aerogear/cordova/geo/Geofence.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
     <source-file src="src/android/org/jboss/aerogear/cordova/geo/GeofenceStore.java" target-dir="src/org/jboss/aerogear/cordova/geo/"/>
