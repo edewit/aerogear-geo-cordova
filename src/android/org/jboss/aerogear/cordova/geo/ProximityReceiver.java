@@ -29,7 +29,7 @@ import android.util.Log;
 import static org.jboss.aerogear.cordova.geo.GeofencingService.TAG;
 
 /**
- * Reciever for the Geofence event, this will create a notification if the app is in the background
+ * Receiver for the Geofence event, this will create a notification if the app is in the background
  * @author edewit@redhat.com
  */
 public class ProximityReceiver extends BroadcastReceiver {
@@ -38,7 +38,7 @@ public class ProximityReceiver extends BroadcastReceiver {
   @Override
   public void onReceive(Context context, Intent intent) {
     String id = intent.getData().getLastPathSegment();
-    String status = intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false) ? "entered" : "left";
+    boolean status = intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false);
 
     Log.d(TAG, "received proximity alert for region " + id + " with status " + status);
 
@@ -48,7 +48,7 @@ public class ProximityReceiver extends BroadcastReceiver {
     }
   }
 
-  public void createNotification(Context context, String id, String status) {
+  public void createNotification(Context context, String id, boolean status) {
     NotificationManager notificationManager = (NotificationManager) context
         .getSystemService(Context.NOTIFICATION_SERVICE);
     String appName = getAppName(context);
@@ -71,11 +71,8 @@ public class ProximityReceiver extends BroadcastReceiver {
             .setAutoCancel(true)
             .setContentIntent(contentIntent);
 
-    if (GeofencingPlugin.getNotifyMessage() != null) {
-      builder.setContentText(String.format(GeofencingPlugin.getNotifyMessage(), id, status));
-    } else {
-      builder.setContentText("You have " + status + " your point of interest");
-    }
+    GeofenceStore store = new GeofenceStore(context.getApplicationContext());
+    builder.setContentText(store.getGeofence(id).getMessage(status));
 
     notificationManager.notify(appName, NOTIFICATION_ID, builder.build());
   }

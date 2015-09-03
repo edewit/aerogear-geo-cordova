@@ -79,11 +79,18 @@
 
   <!-- ios -->
   <platform name="ios">
+    <config-file target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">
+      <string>${EXECUTABLE_NAME} Would Like to Use Your Current Location Even In Background.</string>
+    </config-file>
+    <config-file target="*-Info.plist" parent="NSLocationWhenInUseUsageDescription">
+      <string>${EXECUTABLE_NAME} Would Like to Use Your Current Location When In Use.</string>
+    </config-file>
     <config-file target="config.xml" parent="/*">
       <feature name="Geofencing">
         <param name="ios-package" value="GeofencingPlugin" />
       </feature>
     </config-file>
+    <framework src="CoreLocation.framework" />
 
     <source-file src="src/ios/GeofencingPlugin.m"/>
     <header-file src="src/ios/GeofencingPlugin.h"/>

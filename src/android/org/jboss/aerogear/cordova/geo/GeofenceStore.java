@@ -27,17 +27,14 @@ import java.util.Set;
  * DTO around sharedPreferences to persist and fetch Geofence objects.
  */
 public class GeofenceStore {
-    public static final String KEYS = "org.apache.cordova.plugin.geo.KEY_LATITUDE";
-    public static final String KEY_LATITUDE = "org.apache.cordova.plugin.geo.KEY_LATITUDE";
-    public static final String KEY_LONGITUDE = "org.apache.cordova.plugin.geo.KEY_LONGITUDE";
-    public static final String KEY_RADIUS = "org.apache.cordova.plugin.geo.KEY_RADIUS";
-    public static final String KEY_EXPIRATION_DURATION =
-            "org.apache.cordova.plugin.geo.KEY_EXPIRATION_DURATION";
-
-    public static final String KEY_TRANSITION_TYPE =
-            "org.apache.cordova.plugin.geo.KEY_TRANSITION_TYPE";
-
     public static final String KEY_PREFIX = "org.apache.cordova.plugin.geo.KEY";
+    public static final String KEYS = KEY_PREFIX + "_LATITUDE";
+    public static final String KEY_LATITUDE = KEY_PREFIX + "_LATITUDE";
+    public static final String KEY_LONGITUDE = KEY_PREFIX + "_LONGITUDE";
+    public static final String KEY_RADIUS = KEY_PREFIX + "_RADIUS";
+    public static final String KEY_EXPIRATION_DURATION =  KEY_PREFIX + "_EXPIRATION_DURATION";
+    public static final String KEY_TRANSITION_TYPE = KEY_PREFIX + "_TRANSITION_TYPE";
+    public static final String KEY_MESSAGE = KEY_PREFIX + "_MESSAGE";
 
     public static final long INVALID_LONG_VALUE = -999l;
     public static final float INVALID_FLOAT_VALUE = -999.0f;
@@ -88,13 +85,15 @@ public class GeofenceStore {
                 getGeofenceFieldKey(id, KEY_TRANSITION_TYPE),
                 INVALID_INT_VALUE);
 
+        String message = preferences.getString(getGeofenceFieldKey(id, KEY_MESSAGE), Geofence.DEFAULT_MESSAGE);
+
         if (lat != INVALID_FLOAT_VALUE &&
                 lng != INVALID_FLOAT_VALUE &&
                 radius != INVALID_FLOAT_VALUE &&
                 expirationDuration != INVALID_LONG_VALUE &&
                 transitionType != INVALID_INT_VALUE) {
 
-            return new Geofence(id, lat, lng, radius, expirationDuration, transitionType);
+            return new Geofence(id, lat, lng, radius, expirationDuration, transitionType, message);
         } else {
             return null;
         }
@@ -117,10 +116,11 @@ public class GeofenceStore {
                 geofence.getExpirationDuration());
 
         editor.putInt(getGeofenceFieldKey(id, KEY_TRANSITION_TYPE), geofence.getTransitionType());
+        editor.putInt(getGeofenceFieldKey(id, KEY_MESSAGE), geofence.getTransitionType());
 
         regionIds.add(id);
         editor.putStringSet(KEYS, regionIds);
-        editor.commit();
+        editor.apply();
     }
 
     public void clearGeofence(String id) {
@@ -130,9 +130,11 @@ public class GeofenceStore {
         editor.remove(getGeofenceFieldKey(id, KEY_RADIUS));
         editor.remove(getGeofenceFieldKey(id, KEY_EXPIRATION_DURATION));
         editor.remove(getGeofenceFieldKey(id, KEY_TRANSITION_TYPE));
+        editor.remove(getGeofenceFieldKey(id, KEY_MESSAGE));
+
         regionIds.remove(id);
         editor.putStringSet(KEYS, regionIds);
-        editor.commit();
+        editor.apply();
     }
 
     /**

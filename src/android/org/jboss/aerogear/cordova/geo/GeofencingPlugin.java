@@ -51,7 +51,6 @@ public class GeofencingPlugin extends CordovaPlugin {
 
   private static JSONObject cachedRegionEvent;
   private static boolean foreground;
-  private static String notifyMessage;
   private static List<PluginCommand> pendingActions = new ArrayList<PluginCommand>();
 
   private Timer timer = new Timer();
@@ -125,7 +124,7 @@ public class GeofencingPlugin extends CordovaPlugin {
         String id = params.getString("fid");
         Log.d(TAG, "adding region " + id);
         service.addRegion(id, params.getDouble("latitude"), params.getDouble("longitude"),
-            (float) params.getInt("radius"));
+            (float) params.getInt("radius"), params.optString("message"));
         pluginCommand.getCallbackContext().success();
         return true;
       }
@@ -189,13 +188,13 @@ public class GeofencingPlugin extends CordovaPlugin {
 
   public static void sendNotification(Bundle bundle) {
     if (bundle != null) {
-      final String status = bundle.getString("status");
+      final boolean status = bundle.getBoolean("status");
       final String id = bundle.getString("id");
       sendNotification(createRegionEvent(id, status));
     }
   }
 
-  public static void sendNotification(String id, String status) {
+  public static void sendNotification(String id, boolean status) {
     sendNotification(createRegionEvent(id, status));
   }
 
@@ -209,7 +208,7 @@ public class GeofencingPlugin extends CordovaPlugin {
     }
   }
 
-  private static JSONObject createRegionEvent(String id, String status) {
+  private static JSONObject createRegionEvent(String id, boolean status) {
     JSONObject data = new JSONObject();
     try {
       data.put("fid", id);
@@ -234,10 +233,6 @@ public class GeofencingPlugin extends CordovaPlugin {
 
   public static boolean isActive() {
     return callbackContext != null;
-  }
-
-  public static String getNotifyMessage() {
-    return notifyMessage;
   }
 
   private static class PluginCommand {

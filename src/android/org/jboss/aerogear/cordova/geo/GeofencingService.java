@@ -79,8 +79,8 @@ public class GeofencingService extends Service implements GoogleApiClient.Connec
     googleClient.connect();
   }
 
-  public void addRegion(String id, double latitude, double longitude, float radius) {
-    Geofence geofence = new Geofence(id, latitude, longitude, radius);
+  public void addRegion(String id, double latitude, double longitude, float radius, String message) {
+    Geofence geofence = new Geofence(id, latitude, longitude, radius, message);
     geofenceStore.setGeofence(id, geofence);
     addFence(id, geofence);
   }

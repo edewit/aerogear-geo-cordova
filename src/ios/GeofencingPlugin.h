@@ -29,7 +29,6 @@ enum CDVLocationStatus {
 }
 @property (nonatomic, strong) CLLocationManager* locationManager;
 @property (nonatomic, copy) NSString *callbackId;
-@property (nonatomic, copy) NSString *message;
 
 - (void)register:(CDVInvokedUrlCommand*)command;
 - (void)addRegion:(CDVInvokedUrlCommand *)command;

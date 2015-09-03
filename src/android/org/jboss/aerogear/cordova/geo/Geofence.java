@@ -16,14 +16,22 @@
  */
 package org.jboss.aerogear.cordova.geo;
 
+import java.text.MessageFormat;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Pojo holding the geofence info
  */
 public class Geofence {
+    public static final String DEFAULT_MESSAGE = "You have {0} your point of interest [left|entered]";
+    private static final Pattern REGEX = Pattern.compile("\\[(.+?)\\|(.+?)\\]");
+
     private final String id;
     private final double latitude;
     private final double longitude;
     private final float radius;
+    private final String message;
     private long expirationDuration;
     private int transitionType;
 
@@ -42,18 +50,25 @@ public class Geofence {
             double longitude,
             float radius,
             long expiration,
-            int transition) {
+            int transition,
+            String message) {
         this.id = geofenceId;
         this.latitude = latitude;
         this.longitude = longitude;
         this.radius = radius;
         this.expirationDuration = expiration;
         this.transitionType = transition;
+        this.message = message;
     }
 
     public Geofence(String id, double latitude, double longitude, float radius) {
-        this(id, latitude, longitude, radius, -1, 3);
+        this(id, latitude, longitude, radius, -1, 3, DEFAULT_MESSAGE);
     }
+
+    public Geofence(String id, double latitude, double longitude, float radius, String message) {
+        this(id, latitude, longitude, radius, -1, 3, message == null || "".equals(message) ? DEFAULT_MESSAGE : message);
+    }
+
     // Instance field getters
 
     /**
@@ -109,4 +124,23 @@ public class Geofence {
     public int getTransitionType() {
         return transitionType;
     }
+
+    /**
+     * Get the message to be used to notify the user.
+     *
+     * @return the message for notification
+     */
+    public String getMessage() {
+        return message;
+    }
+
+    public String getMessage(boolean entering) {
+        Matcher matcher = REGEX.matcher(message);
+        if (matcher.find()) {
+            return MessageFormat.format(message.substring(0, matcher.start()), matcher.group(entering ? 2 : 1));
+        } else {
+            return message;
+        }
+    }
+    
 }

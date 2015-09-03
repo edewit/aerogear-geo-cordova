@@ -21,14 +21,14 @@
 @implementation GeofencingPlugin
 
 @synthesize callbackId;
-@synthesize message;
 @synthesize locationManager;
 
 - (CDVPlugin*)initWithWebView:(UIWebView*)theWebView {
-    self = (GeofencingPlugin*)[super initWithWebView:(UIWebView*)theWebView];
+    self = (GeofencingPlugin*) [super initWithWebView:theWebView];
     if (self) {
         self.locationManager = [[CLLocationManager alloc] init];
         self.locationManager.delegate = self; // Tells the location manager to send updates to this object
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters;
     }
 
     [self.locationManager startUpdatingLocation];
@@ -38,7 +38,7 @@
 - (void)register:(CDVInvokedUrlCommand *)command {
     self.callbackId = command.callbackId;
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
-    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+    [pluginResult setKeepCallback:@YES];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
@@ -46,16 +46,18 @@
     [self checkMonitoringStatus];
 
     NSMutableDictionary *options = [self parseParameters:command];
-    NSString *regionId = [options objectForKey:@"fid"];
-    NSString *latitude = [options objectForKey:@"latitude"];
-    NSString *longitude = [options objectForKey:@"longitude"];
-    double radius = [[options objectForKey:@"radius"] doubleValue];
+    NSString *regionId = options[@"fid"];
+    NSString *latitude = options[@"latitude"];
+    NSString *longitude = options[@"longitude"];
+    NSString *message = options[@"message"];
+    double radius = [options[@"radius"] doubleValue];
     if (radius > locationManager.maximumRegionMonitoringDistance) {
         radius = locationManager.maximumRegionMonitoringDistance;
     }
 
+    NSString *identifier = [NSString stringWithFormat:@"cordovaGeofencing:%@|%@", regionId, message ? message : @"You have {0} your point of interest [left|entered]"];
     CLLocationCoordinate2D coordinate2D = CLLocationCoordinate2DMake([latitude doubleValue], [longitude doubleValue]);
-    CLRegion * region = [[CLRegion alloc] initCircularRegionWithCenter:coordinate2D radius:radius identifier:[NSString stringWithFormat:@"cordovaGeofencing:%@", regionId]];
+    CLRegion * region = [[CLRegion alloc] initCircularRegionWithCenter:coordinate2D radius:radius identifier:identifier];
 
     [self.locationManager startMonitoringForRegion:region];
     [self returnStatusOk:command];
@@ -65,7 +67,7 @@
     NSString *regionId = [[self parseParameters:command] objectForKey:@"fid"];
 
     for (CLRegion *region in [locationManager monitoredRegions]) {
-        if ([region.identifier hasSuffix:regionId]) {
+        if ([regionId isEqualToString:[self getRegionId:region]]) {
             [locationManager stopMonitoringForRegion:region];
         }
     }
@@ -85,37 +87,34 @@
 }
 
 - (NSString *)getRegionId:(CLRegion *)region {
+    NSRegularExpression *idExpression = [NSRegularExpression regularExpressionWithPattern:@":(\\d+?)\\|" options:0 error:nil];
     NSString *identifier = region.identifier;
-    return [identifier substringFromIndex:[identifier rangeOfString:@":"].location + 1];
+    NSTextCheckingResult* idMatch = [idExpression matchesInString:identifier options:0 range:NSMakeRange(0, [identifier length])][0];
+
+    return [identifier substringWithRange:[idMatch rangeAtIndex:1]];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region {
-    [self notify:region withStatus:@"entered"];
+    [self notify:region withStatus:@YES];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region {
-    [self notify:region withStatus:@"left"];
+    [self notify:region withStatus:@NO];
 }
 
-- (void)notify:(CLRegion *)region withStatus:(NSString *)status{
+- (void)notify:(CLRegion *)region withStatus:(NSNumber*)status{
     NSString *regionId = [self getRegionId:region];
 
     NSMutableDictionary *data = [[NSMutableDictionary alloc] init];
-    [data setObject:regionId forKey:@"fid"];
-    [data setObject:status forKey:@"status"];
+    data[@"fid"] = regionId;
+    data[@"status"] = status;
 
     CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:data];
-    [result setKeepCallback:[NSNumber numberWithBool:YES]];
+    [result setKeepCallback:@YES];
     [self.commandDelegate sendPluginResult:result callbackId:self.callbackId];
 
     //Local notification if the app is in the background
-    NSString *statusMessage;
-    if (message != Nil) {
-        statusMessage = [NSString stringWithFormat:message, regionId, status];
-    } else {
-        statusMessage = [NSString stringWithFormat:@"You have %@ your point of interest", status];
-    }
-
+    NSString *statusMessage = [self parseMessage:region status:status];
     UILocalNotification *notification = [[UILocalNotification alloc] init];
     notification.fireDate = [NSDate date];
     NSTimeZone* timezone = [NSTimeZone defaultTimeZone];
@@ -124,6 +123,27 @@
     notification.alertAction = @"Show";
     notification.soundName = UILocalNotificationDefaultSoundName;
     [[UIApplication sharedApplication] scheduleLocalNotification:notification];
+}
+
+- (NSString *)parseMessage:(CLRegion *)region status:(NSNumber *)status {
+    NSString* identifier = region.identifier;
+    NSRegularExpression *messageParams = [NSRegularExpression regularExpressionWithPattern:@"\\[(.+?)\\|(.+?)\\]" options:0 error:nil];
+    NSArray* matches = [messageParams matchesInString:identifier options:0 range:NSMakeRange(0, [identifier length])];
+    NSUInteger index = [identifier rangeOfString:@"|"].location;
+    NSString* statusMessage;
+    if (matches) {
+        NSTextCheckingResult* match = matches[0];
+        NSString* exit = [identifier substringWithRange:[match rangeAtIndex:1]];
+        NSString* enter = [identifier substringWithRange:[match rangeAtIndex:2]];
+        NSRange range = NSMakeRange(index + 1, [match range].location - index);
+        NSMutableString* template = [identifier substringWithRange:range].mutableCopy;
+        NSRegularExpression *templateParam = [NSRegularExpression regularExpressionWithPattern:@"\\{0\\}" options:0 error:nil];
+        [templateParam replaceMatchesInString:template options:0 range:NSMakeRange(0, template.length) withTemplate:(status ? enter : exit)];
+        statusMessage = template;
+    } else {
+        statusMessage = [identifier substringWithRange:NSMakeRange(index, identifier.length)];
+    }
+    return statusMessage;
 }
 
 - (void)locationManager:(CLLocationManager *)manager didStartMonitoringForRegion:(CLRegion *)region {
@@ -140,9 +160,14 @@
         return;
     }
 
+    if ([self.locationManager respondsToSelector:@selector(requestAlwaysAuthorization)]) {
+        [self.locationManager requestAlwaysAuthorization];
+    }
+
     if (![self isAuthorized]) {
         NSString *errorMessage = nil;
         BOOL authStatusAvailable = [CLLocationManager respondsToSelector:@selector(authorizationStatus)]; // iOS 4.2+
+
         if (authStatusAvailable) {
             NSUInteger code = [CLLocationManager authorizationStatus];
             if (code == kCLAuthorizationStatusNotDetermined) {
@@ -208,8 +233,8 @@
 - (void)returnLocationError:(NSUInteger)errorCode withMessage:(NSString *)errorMessage {
     NSMutableDictionary *posError = [NSMutableDictionary dictionaryWithCapacity:2];
 
-    [posError setObject:[NSNumber numberWithInt:errorCode] forKey:@"code"];
-    [posError setObject:errorMessage ? errorMessage : @"" forKey:@"message"];
+    posError[@"code"] = @(errorCode);
+    posError[@"message"] = errorMessage ? errorMessage : @"";
     CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:posError];
 
     [self.commandDelegate sendPluginResult:result callbackId:callbackId];
@@ -218,7 +243,7 @@
 - (id)parseParameters:(CDVInvokedUrlCommand*)command {
     NSArray *data = [command arguments];
     if (data.count == 1) {
-        return [data objectAtIndex:0];
+        return data[0];
     }
     return Nil;
 }

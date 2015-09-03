@@ -46,6 +46,8 @@ var geofencing = (function() {
      * @param {String} params.latitude - the latitude of the fence
      * @param {String} params.longitude - the longitude of the fence
      * @param {String} params.radius - the radius of the fence
+     * @param {String} params.message - the message to show the user the format is: message [left text| entered text]
+     *  example: You have {0} your point of interest [left|entered] you could also create a message without left and entered 
      * @returns {void}
      */
     addRegion: function (successCallback, errorCallback, params) {
