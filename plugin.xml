@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        id="org.jboss.aerogear.cordova.geo"
+        id="aerogear-cordova-geo"
         version="0.0.2">
 
   <name>AeroGear Geo Plugin</name>
@@ -10,7 +10,7 @@
     This plugin is a collection of tools to make you live easier when using geo posistioning. It provides options to easly create maps that are based openlayers and adds the posiblity to monitor geo fences.
   </description>
 
-  <license>MIT</license>
+  <license>Apache 2.0 License</license>
   <keywords>cordova,aerogear,geo,geofence,geofencing</keywords>
 
   <engines>
@@ -87,5 +87,15 @@
 
     <source-file src="src/ios/GeofencingPlugin.m"/>
     <header-file src="src/ios/GeofencingPlugin.h"/>
+  </platform>
+  
+  <platform name="windows">
+    <config-file target="package.appxmanifest" parent="/Package/Capabilities">
+      <DeviceCapability Name="location" />
+    </config-file>
+
+    <js-module src="src/windows/geoProxy.js" name="geofencingProxy">
+      <runs />
+    </js-module>
   </platform>
 </plugin>
