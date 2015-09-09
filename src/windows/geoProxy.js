@@ -1,4 +1,4 @@
-cordova.define("aerogear-cordova-geo.geofencingProxy", function(require, exports, module) { /* AeroGear Cordova Plugin
+/* AeroGear Cordova Plugin
  * https://github.com/aerogear/aerogear-pushplugin-cordova
  * JBoss, Home of Professional Open Source
  * Copyright Red Hat, Inc., and individual contributors
@@ -14,35 +14,113 @@ cordova.define("aerogear-cordova-geo.geofencingProxy", function(require, exports
  * limitations under the License.
  */
 'use strict';
+
+var Background = Windows.ApplicationModel.Background;
+var geofenceTask;
+var geolocator = new Windows.Devices.Geolocation.Geolocator();
+var getGeopositionPromise;
+var taskName = "AeroGearGeofencingTask";
+var taskEntryPoint = "plugins/aerogear-cordova-geo/geofencebackgroundtask.js";
+var geofenceEventsData;
+var geofenceEventsListView;
+var disposed;
+
+function getGeopositionAsync() {
+    var geolocator = new Windows.Devices.Geolocation.Geolocator();
+
+    getGeopositionPromise = geolocator.getGeopositionAsync();
+    getGeopositionPromise.done(
+        function (pos) {
+            var coord = pos.coordinate;
+
+        },
+        function (err) {
+            if (!disposed) {
+            }
+        }
+    );
+}
+
+function registerBackgroundTask(fail) {
+    try {
+        Background.BackgroundExecutionManager.requestAccessAsync().done(
+            function (backgroundAccessStatus) {
+                var builder = new Windows.ApplicationModel.Background.BackgroundTaskBuilder();
+
+                builder.name = taskName;
+                builder.taskEntryPoint = taskEntryPoint;
+                builder.setTrigger(new Windows.ApplicationModel.Background.TimeTrigger(15, false));
+
+                geofenceTask = builder.register();
+
+                //geolocTask.addEventListener("completed", onCompleted);
+
+                switch (backgroundAccessStatus) {
+                    case Background.BackgroundAccessStatus.unspecified:
+                    case Background.BackgroundAccessStatus.denied:
+                        fail("This application must be added to the lock screen before the background task will run.");
+                        break;
+
+                    default:
+                        getGeopositionAsync();
+                        break;
+                }
+            },
+            function (e) {
+                fail(e.toString());
+            }
+        );
+    } catch (ex) {
+        // HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED) === -2147024846
+        if (ex.number === -2147024846) {
+           fail("Location Simulator not supported.  Could not get permission to add application to the lock screen, this application must be added to the lock screen before the background task will run.");
+        } else {
+            fail(ex.toString());
+        }
+    }
+}
+
 module.exports = {
-    register: function (onNotification) {
-        //function requestLocationAccess() {
-        //    Windows.Devices.Geolocation.Geolocator.requestAccessAsync().done(
-        //    function (accessStatus) {
-        //        switch (accessStatus) {
-        //            case Windows.Devices.Geolocation.GeolocationAccessStatus.allowed:
+    register: function (onNotification, fail) {
 
-        //                // register for geofence state change events
-        //                geofenceMonitor.addEventListener("geofencestatechanged", onGeofenceStateChanged);
-        //                geofenceMonitor.addEventListener("statuschanged", onGeofenceStatusChanged);
-        //                break;
+        var iter = Windows.ApplicationModel.Background.BackgroundTaskRegistration.allTasks.first();
+        var hascur = iter.hasCurrent;
+        while (hascur) {
+            var cur = iter.current.value;
+            if (cur.name === taskName) {
+                geofenceTask = cur;
+                break;
+            }
+            hascur = iter.moveNext();
+        }
 
-        //            case Windows.Devices.Geolocation.GeolocationAccessStatus.denied:
-        //                WinJS.log && WinJS.log("Access to location is denied.", "sample", "error");
-        //                break;
+        if (geofenceTask) {
+            try {
+                var backgroundAccessStatus = Background.BackgroundExecutionManager.getAccessStatus();
+                switch (backgroundAccessStatus) {
+                    case Background.BackgroundAccessStatus.unspecified:
+                    case Background.BackgroundAccessStatus.denied:
+                        fail("This application must be added to the lock screen before the background task will run.");
+                        break;
 
-        //            case Windows.Devices.Geolocation.GeolocationAccessStatus.unspecified:
-        //                WinJS.log && WinJS.log("Unspecified error!", "sample", "error");
-        //                break;
-        //        }
-        //    },
-        //    function (err) {
-        //        WinJS.log && WinJS.log(err, "sample", "error");
-        //    });
-        //}
+                    default:
+                        break;
+                }
+            } catch (ex) {
 
-        //requestLocationAccess();
+                // HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED) === -2147024846
+                if (ex.number === -2147024846) {
+                    fail("Location Simulator not supported. Could not determine lock screen status, be sure that the application is added to the lock screen.");
+                } else {
+                    fail(ex.toString());
+                }
+            }
+            registerBackgroundTask(fail);
+        } else {
+            registerBackgroundTask(fail);
+        }
 
+        var geofenceMonitor = Windows.Devices.Geolocation.Geofencing.GeofenceMonitor.current;
         geofenceMonitor.addEventListener("geofencestatechanged", function () {
             args.target.readReports().forEach(function processReport(report) {
                 var state = report.newState;
@@ -105,7 +183,7 @@ module.exports = {
             mask = mask | Windows.Devices.Geolocation.Geofencing.MonitoredGeofenceStates.exited;
             mask = mask | Windows.Devices.Geolocation.Geofencing.MonitoredGeofenceStates.removed;
 
-            var dwellTimeSpan = 36000;
+            var dwellTimeSpan = 3000;
             var durationTimeSpan = new Number(0); // duration needs to be set since start time is set below
             var startDateTime = new Date(); // if you don't set start time in JavaScript the start time defaults to 1/1/1601
 
@@ -113,10 +191,9 @@ module.exports = {
             geofence = new Windows.Devices.Geolocation.Geofencing.Geofence(fenceKey, geocircle, mask, singleUse, dwellTimeSpan, startDateTime, durationTimeSpan);
             geofenceMonitor.geofences.push(geofence);
         } catch (ex) {
-            WinJS.log && WinJS.log(ex.toString(), "sample", "error");
+            errorCallback(ex.toString());
         }
     }
 };
 
 require("cordova/exec/proxy").add("Geofencing", module.exports);
-});

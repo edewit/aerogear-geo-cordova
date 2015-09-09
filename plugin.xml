@@ -88,14 +88,24 @@
     <source-file src="src/ios/GeofencingPlugin.m"/>
     <header-file src="src/ios/GeofencingPlugin.h"/>
   </platform>
-  
+
   <platform name="windows">
     <config-file target="package.appxmanifest" parent="/Package/Capabilities">
       <DeviceCapability Name="location" />
+    </config-file>
+    <config-file target="package.appxmanifest" parent="/Package/Applications/Application/Extensions" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest">
+        <Extension Category="windows.backgroundTasks" StartPage="plugins/aerogear-cordova-geo/geofencebackgroundtask.js">
+          <BackgroundTasks>
+            <Task Type="systemEvent" />
+            <Task Type="timer" />
+            <m2:Task Type="location" />
+          </BackgroundTasks>
+        </Extension>
     </config-file>
 
     <js-module src="src/windows/geoProxy.js" name="geofencingProxy">
       <runs />
     </js-module>
+    <source-file src="src/windows/geofencebackgroundtask.js" />
   </platform>
 </plugin>
